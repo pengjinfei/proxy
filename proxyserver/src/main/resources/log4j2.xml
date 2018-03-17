@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <!--<PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] [%X{mdc}] - %m%n"/>-->
+            <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] -%c{1.}-%L-%m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <logger name="org.springframework.retry" level="debug" additivity="false">
+            <appender-ref ref="Console"/>
+        </logger>
+        <Root level="info">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>

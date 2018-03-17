@@ -7,14 +7,12 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.security.InvalidKeyException;
-
 public class AesUtilsBeanchmark {
 
     private static byte[] bytes = RandomUtils.nextBytes(16);
 
     @Benchmark
-    public void encrypt() throws InvalidKeyException {
+    public void encrypt() {
         AesUtils.encrypt("pjf".getBytes(), bytes);
     }
 
