@@ -13,4 +13,5 @@ import java.io.Serializable;
 public class TransferData implements Serializable{
     private int port;
     private byte[] data;
+    private String reqId;
 }

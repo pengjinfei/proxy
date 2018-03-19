@@ -1,8 +1,11 @@
 package com.pengjinfei.proxy.server.handler;
 
 import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 import lombok.experimental.UtilityClass;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,19 +17,29 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProxyChannelManager {
 
     /**
-     * key: facade server port
-     * value: channel from client server
+     * ports of a client server
      */
-    private static ConcurrentHashMap<Integer, Channel> portChannelMapping = new ConcurrentHashMap<Integer, Channel>();
+    private static final AttributeKey<List<Channel>> PROXY_FACADE = AttributeKey.valueOf("proxy_facade");
 
-    public static void addChannelMapping(Integer port, Channel channel) {
-        Channel ch = portChannelMapping.putIfAbsent(port, channel);
-        if (ch != null) {
-            throw new RuntimeException("Port " + port + " is in use");
+    private static final ConcurrentHashMap<String, Channel> facadeChannelMapping = new ConcurrentHashMap<String, Channel>();
+
+    public static void addFacadeChannel2ProxyChannel(Channel proxyChannel, Channel facadeChannel) {
+        List<Channel> channels = proxyChannel.attr(PROXY_FACADE).get();
+        if (channels == null) {
+            channels = new LinkedList<Channel>();
         }
+        channels.add(facadeChannel);
     }
 
-    public static boolean isPortAvailable(Integer port) {
-        return !portChannelMapping.containsKey(port);
+    public static void addFacadeClientChannel(String reqId, Channel channel) {
+        facadeChannelMapping.put(reqId, channel);
+    }
+
+    public static void removeFacadeClientChannel(String reqId) {
+        facadeChannelMapping.remove(reqId);
+    }
+
+    public static Channel getFacadeClientChannelByReqid(String reqid) {
+        return facadeChannelMapping.get(reqid);
     }
 }

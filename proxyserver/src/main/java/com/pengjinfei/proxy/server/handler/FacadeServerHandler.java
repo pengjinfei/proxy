@@ -7,10 +7,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Created on 3/17/18
+ *
  *
  * @author Pengjinfei
  */
@@ -19,6 +21,7 @@ public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     private final Integer port;
     private  final Channel proxyChannel;
+    private final ChannelGroup group;
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf buf) throws Exception {
@@ -28,8 +31,15 @@ public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
         TransferData data = new TransferData();
         data.setPort(port);
         data.setData(bytes);
+        data.setReqId(channelHandlerContext.channel().id().asLongText());
         message.setBody(data);
         message.setMessageType(MessageType.DATA);
         proxyChannel.writeAndFlush(message);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        group.add(ctx.channel());
+        super.channelActive(ctx);
     }
 }
