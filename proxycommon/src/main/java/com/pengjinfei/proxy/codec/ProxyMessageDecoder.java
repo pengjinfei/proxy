@@ -28,9 +28,9 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
         if (frame == null) {
             return null;
         }
-        int size = in.readInt();
+        int size = frame.readInt();
         byte[] bytes = new byte[size];
-        in.readBytes(bytes, 0, size);
+        frame.readBytes(bytes, 0, size);
         return FstSerializerUtils.deserialize(AesUtils.decrypt(bytes,passwd));
     }
 

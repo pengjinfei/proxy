@@ -4,12 +4,14 @@ import com.pengjinfei.proxy.codec.ProxyMessageDecoder;
 import com.pengjinfei.proxy.codec.ProxyMessageEncoder;
 import com.pengjinfei.proxy.server.handler.ProxyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -33,7 +35,8 @@ public class SeverApplication implements CommandLineRunner{
 
     @Override
     public void run(String... args) throws Exception {
-        final String passwd = RandomStringUtils.randomAlphabetic(16);
+        //final String passwd = RandomStringUtils.randomAlphabetic(16);
+        String passwd = "PrrukLRXJfwWbMsn";
         log.info("passwd is {}", passwd);
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -45,10 +48,10 @@ public class SeverApplication implements CommandLineRunner{
                     .childHandler(new ChannelInitializer<SocketChannel>(){
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            ChannelPipeline pipeline = socketChannel.pipeline();
-                            pipeline.addLast(new ProxyMessageDecoder(1024,4,4,passwd.getBytes()));
-                            pipeline.addLast(new ProxyMessageEncoder(passwd.getBytes()));
-                            pipeline.addLast(new ProxyServerHandler());
+                            socketChannel.pipeline()
+                                    .addLast(new ProxyMessageDecoder(1024*1024,0,4,passwd.getBytes()))
+                                    .addLast(new ProxyMessageEncoder(passwd.getBytes()))
+                                    .addLast(new ProxyServerHandler());
                         }
                     });
             ChannelFuture future = bootstrap.bind(port).sync();

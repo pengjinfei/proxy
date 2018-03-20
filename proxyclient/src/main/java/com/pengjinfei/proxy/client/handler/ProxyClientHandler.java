@@ -2,6 +2,8 @@ package com.pengjinfei.proxy.client.handler;
 
 import com.pengjinfei.proxy.channel.ChannelManager;
 import com.pengjinfei.proxy.handler.AbstractProxyMessageHandler;
+import com.pengjinfei.proxy.message.ConnectReq;
+import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
 import io.netty.bootstrap.Bootstrap;
@@ -12,6 +14,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.RequiredArgsConstructor;
 
 import java.net.SocketAddress;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,5 +59,19 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler{
     @Override
     protected void handleReq(ChannelHandlerContext context, ProxyMessage message) {
 
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        ProxyMessage<ConnectReq> msg = new ProxyMessage<>();
+        msg.setMessageType(MessageType.CONNECT_REQ);
+        ConnectReq connectReq = new ConnectReq();
+        List<Integer> portList = new LinkedList<>();
+        for (Map.Entry<Integer, SocketAddress> entry : portMapping.entrySet()) {
+            portList.add(entry.getKey());
+        }
+        connectReq.setPortList(portList);
+        msg.setBody(connectReq);
+        ctx.channel().writeAndFlush(msg);
     }
 }

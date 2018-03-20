@@ -4,10 +4,7 @@ import com.pengjinfei.proxy.handler.AbstractProxyMessageHandler;
 import com.pengjinfei.proxy.message.*;
 import com.pengjinfei.proxy.util.NetUtils;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -76,7 +73,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 					.channel(NioServerSocketChannel.class)
 					.option(ChannelOption.SO_BACKLOG, 100)
 					.childHandler(new FacadeServerHandler(succPort, channel, manager));
-			bootstrap.bind(succPort);
+			bootstrap.bind(succPort).addListener((ChannelFutureListener) future -> manager.add(future.channel()));
 		}
 		resp.setRespType(RespType.SUCCESS);
 		channel.writeAndFlush(resp);

@@ -17,6 +17,8 @@ public class ProxyMessageEncoder extends MessageToByteEncoder<ProxyMessage>{
 
     private final byte[] passwd;
 
+    private static final byte[] LENGTH_PLACEHOLDER = new byte[NettyConstant.FIELD_LENGTH];
+
     public ProxyMessageEncoder(byte[] passwd) {
         this.passwd = passwd;
     }
@@ -27,7 +29,7 @@ public class ProxyMessageEncoder extends MessageToByteEncoder<ProxyMessage>{
             throw new Exception("The encode message is null");
         }
         int writerIndex = byteBuf.writerIndex();
-        byteBuf.writeBytes(new byte[NettyConstant.FIELD_LENGTH]);
+        byteBuf.writeBytes(LENGTH_PLACEHOLDER);
         byte[] bytes = AesUtils.encrypt(FstSerializerUtils.serialize(proxyMessage),passwd);
         byteBuf.writeBytes(bytes);
         byteBuf.setInt(writerIndex, byteBuf.writerIndex() - writerIndex - NettyConstant.FIELD_LENGTH);

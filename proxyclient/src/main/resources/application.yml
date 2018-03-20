@@ -1,7 +1,7 @@
 proxy:
   ip: 127.0.0.1
   port: 8888
-  passwd: lwMaCyGsacdplowe
+  passwd: PrrukLRXJfwWbMsn
   mapping:
     - facadePort: 7777
       realPort: 7001

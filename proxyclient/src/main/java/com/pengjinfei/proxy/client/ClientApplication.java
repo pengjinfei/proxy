@@ -5,11 +5,10 @@ import com.pengjinfei.proxy.client.configuration.ProxyConfiguration;
 import com.pengjinfei.proxy.client.handler.ProxyClientHandler;
 import com.pengjinfei.proxy.codec.ProxyMessageDecoder;
 import com.pengjinfei.proxy.codec.ProxyMessageEncoder;
-import com.pengjinfei.proxy.message.ConnectReq;
-import com.pengjinfei.proxy.message.MessageType;
-import com.pengjinfei.proxy.message.ProxyMessage;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -21,7 +20,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -50,25 +48,13 @@ public class ClientApplication implements CommandLineRunner {
 				.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
 					protected void initChannel(SocketChannel socketChannel) throws Exception {
-						ChannelPipeline pipeline = socketChannel.pipeline();
-						pipeline.addLast(new ProxyMessageDecoder(1024,4,4,passwd.getBytes()));
-						pipeline.addLast(new ProxyMessageEncoder(passwd.getBytes()));
-						pipeline.addLast(new ProxyClientHandler(portMap));
+                        socketChannel.pipeline()
+                                .addLast(new ProxyMessageDecoder(1024*1024,0,4,passwd.getBytes()))
+                                .addLast(new ProxyMessageEncoder(passwd.getBytes()))
+                                .addLast(new ProxyClientHandler(portMap));
 					}
 				});
 		ChannelFuture channelFuture = bootstrap.connect(configuration.getIp(), configuration.getPort()).sync();
-		channelFuture.addListener((ChannelFutureListener) future -> {
-			ProxyMessage<ConnectReq> msg = new ProxyMessage<>();
-			msg.setMessageType(MessageType.CONNECT_REQ);
-			ConnectReq connectReq = new ConnectReq();
-			List<Integer> portList = new LinkedList<>();
-			for (Map.Entry<Integer, SocketAddress> entry : portMap.entrySet()) {
-				portList.add(entry.getKey());
-			}
-			connectReq.setPortList(portList);
-			msg.setBody(connectReq);
-			future.channel().writeAndFlush(msg);
-		});
 		channelFuture.channel().closeFuture().sync();
 	}
 
