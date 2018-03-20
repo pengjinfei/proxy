@@ -13,8 +13,12 @@ import java.net.Socket;
 public class NetUtils {
 
     public static boolean isPortInuse(int port) {
+        return isIpAndPortInService("127.0.0.1", port);
+    }
+
+    public static boolean isIpAndPortInService(String host, int port) {
         try {
-            new Socket("127.0.0.1", port);
+            new Socket(host, port);
             return true;
         } catch (Exception ignored) {
         }

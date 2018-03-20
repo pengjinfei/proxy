@@ -1,5 +1,6 @@
 package com.pengjinfei.proxy.handler;
 
+import com.pengjinfei.proxy.channel.ChannelManager;
 import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,8 +12,11 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @author Pengjinfei
  */
 public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHandler<ProxyMessage> {
+
+    protected ChannelManager manager = new ChannelManager();
+
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) throws Exception {
+    protected void messageReceived(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) throws Exception {
         MessageType messageType = proxyMessage.getMessageType();
         switch (messageType) {
             case CONNECT_REQ:
@@ -33,4 +37,10 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
     protected abstract void handleData(ChannelHandlerContext context, ProxyMessage message) ;
 
     protected abstract void handleReq(ChannelHandlerContext context, ProxyMessage message);
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    	manager.close();
+        super.channelInactive(ctx);
+    }
 }

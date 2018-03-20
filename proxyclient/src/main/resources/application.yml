@@ -1,0 +1,8 @@
+proxy:
+  ip: 127.0.0.1
+  port: 8888
+  passwd: lwMaCyGsacdplowe
+  mapping:
+    - facadePort: 7777
+      realPort: 7001
+      realIp: 127.0.0.1
