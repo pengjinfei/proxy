@@ -6,6 +6,7 @@ import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
+@ChannelHandler.Sharable
 public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
 	private final Integer port;
@@ -47,5 +49,11 @@ public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 		message.setBody(data);
 		message.setMessageType(MessageType.DATA);
 		proxyChannel.writeAndFlush(message);
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		log.error("error occurred", cause);
+		ctx.channel().close();
 	}
 }

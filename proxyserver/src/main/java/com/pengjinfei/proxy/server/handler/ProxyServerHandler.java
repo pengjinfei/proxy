@@ -34,7 +34,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 			//// TODO: 2018-03-20 应该返回消息，关闭失效的链路
 			log.warn(String.format("Can't find channel of id:%s, it's probably closed.", reqId));
 		} else {
-			facadeChannel.writeAndFlush(transferData.getData());
+		    writeData2RealServer(context,facadeChannel,transferData.getData());
 		}
 	}
 
@@ -79,4 +79,17 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 		channel.writeAndFlush(resp);
 	}
 
+	@Override
+	protected void handleHeartBeatReq(ChannelHandlerContext context, ProxyMessage message) {
+		ProxyMessage<Boolean> resp = new ProxyMessage<>();
+		resp.setMessageType(MessageType.HEART_BEAT_RESP);
+		resp.setBody(true);
+		context.channel().writeAndFlush(resp);
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		log.error("error occured.",cause);
+		ctx.channel().close();
+	}
 }

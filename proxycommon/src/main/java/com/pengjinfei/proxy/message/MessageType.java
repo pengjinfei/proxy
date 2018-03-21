@@ -8,7 +8,12 @@ import java.io.Serializable;
  * @author Pengjinfei
  */
 public enum  MessageType implements Serializable{
+    /*
+    客户端连接请求
+     */
     CONNECT_REQ,
     CONNECT_RESP,
-    DATA;
+    DATA,
+    HEART_BEAT_REQ,
+    HEART_BEAT_RESP;
 }

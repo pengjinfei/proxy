@@ -1,10 +1,5 @@
 package com.pengjinfei.proxy.constants;
 
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
-
-import java.util.List;
-
 /**
  * Created on 3/17/18
  *
@@ -14,8 +9,8 @@ public interface NettyConstant {
 
     int FIELD_LENGTH = 4;
 
-    AttributeKey<List<Channel>> PROXY_FACADE = AttributeKey.valueOf("proxy_facade");
+    int MAX_FRAME_LENGTH = 1024 * 1024;
 
-    AttributeKey<String> FACADE_REQID = AttributeKey.valueOf("facade_reqid");
+    int READ_TIMEOUT = 50;
 }
 

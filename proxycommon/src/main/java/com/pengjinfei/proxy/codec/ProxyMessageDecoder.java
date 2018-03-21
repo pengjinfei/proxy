@@ -34,8 +34,4 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
         return FstSerializerUtils.deserialize(AesUtils.decrypt(bytes,passwd));
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("error occurred.", cause);
-    }
 }

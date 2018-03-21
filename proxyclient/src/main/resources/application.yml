@@ -3,6 +3,6 @@ proxy:
   port: 8888
   passwd: PrrukLRXJfwWbMsn
   mapping:
-    - facadePort: 7777
-      realPort: 7001
+    - facadePort: 8123
+      realPort: 8000
       realIp: 127.0.0.1

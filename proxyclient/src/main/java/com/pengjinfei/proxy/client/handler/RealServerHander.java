@@ -1,9 +1,11 @@
 package com.pengjinfei.proxy.client.handler;
 
+import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
  * @since 2018-03-20
  */
 @RequiredArgsConstructor
+@ChannelHandler.Sharable
 public class RealServerHander extends SimpleChannelInboundHandler<ByteBuf> {
 
 	private final int port;
@@ -30,6 +33,8 @@ public class RealServerHander extends SimpleChannelInboundHandler<ByteBuf> {
 		msg.readBytes(bytes);
 		data.setReqId(reqId);
 		data.setData(bytes);
+		message.setMessageType(MessageType.DATA);
+		message.setBody(data);
 		proxyChannel.writeAndFlush(message);
 	}
 }
