@@ -35,7 +35,7 @@ public class ClientApplication implements CommandLineRunner {
 
 	private AtomicInteger retryTimes = new AtomicInteger(0);
 
-	private static final int MAX_RETRY = 2;
+	private static final int MAX_RETRY = 5;
 
 	@Override
 	public void run(String... strings) throws Exception {
