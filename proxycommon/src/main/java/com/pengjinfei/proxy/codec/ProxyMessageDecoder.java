@@ -5,6 +5,7 @@ import com.pengjinfei.proxy.util.FstSerializerUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -31,6 +32,7 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
         int size = frame.readInt();
         byte[] bytes = new byte[size];
         frame.readBytes(bytes, 0, size);
+        ReferenceCountUtil.release(frame);
         return FstSerializerUtils.deserialize(AesUtils.decrypt(bytes,passwd));
     }
 

@@ -8,6 +8,7 @@ import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -67,23 +68,38 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 	protected void handleData(ChannelHandlerContext context, ProxyMessage message) {
 		TransferData data = (TransferData) message.getBody();
 		String reqId = data.getReqId();
-		Channel channel = manager.find(reqId);
-		if (channel == null) {
-			Bootstrap bootstrap = new Bootstrap();
-			bootstrap.group(context.channel().eventLoop())
-					.channel(NioSocketChannel.class)
-					.handler(new RealServerHander(data.getPort(), reqId, context.channel()));
-			bootstrap.connect(portMap.get(data.getPort())).addListener((ChannelFutureListener) future -> {
-				Channel realChannel = future.channel();
-				manager.add(reqId, realChannel);
-				writeData2RealServer(context,realChannel,data.getData());
-			});
+        int port = data.getPort();
+        Channel channel = manager.find(reqId);
+        byte[] bytes = data.getData();
+        ByteBuf buf = context.alloc().buffer(bytes.length);
+        buf.writeBytes(bytes);
+        Channel proxyChannel = context.channel();
+        if (channel == null || !channel.isWritable()) {
+            newChannelAndWrite(reqId, port, buf, proxyChannel);
 		} else {
-		    writeData2RealServer(context,channel,data.getData());
+            channel.writeAndFlush(buf).addListener(future -> {
+                if (!future.isSuccess()) {
+                    log.warn("channel exists but write failed.");
+                    newChannelAndWrite(reqId,port,buf,proxyChannel);
+                }
+            });
 		}
 	}
 
-	@Override
+    private void newChannelAndWrite(String reqId, int port, ByteBuf buf, Channel proxyChannel) {
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(proxyChannel.eventLoop())
+                .channel(NioSocketChannel.class)
+                .handler(new RealServerHander(port, reqId, proxyChannel));
+        bootstrap.connect(portMap.get(port)).addListener((ChannelFutureListener) future -> {
+            //// TODO: 3/22/18  如果服务器连接失败 关闭远程端口
+            Channel realChannel = future.channel();
+            manager.add(reqId, realChannel);
+            realChannel.writeAndFlush(buf);
+        });
+    }
+
+    @Override
 	protected void handleReq(ChannelHandlerContext context, ProxyMessage message) {
 
 	}

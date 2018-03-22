@@ -4,7 +4,11 @@ import com.pengjinfei.proxy.handler.AbstractProxyMessageHandler;
 import com.pengjinfei.proxy.message.*;
 import com.pengjinfei.proxy.util.NetUtils;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -21,11 +25,6 @@ import java.util.List;
 public class ProxyServerHandler extends AbstractProxyMessageHandler {
 
 	@Override
-	protected void handleResp(ChannelHandlerContext handlerContext, ProxyMessage message) {
-
-	}
-
-	@Override
 	protected void handleData(ChannelHandlerContext context, ProxyMessage message) {
 		TransferData transferData = (TransferData) message.getBody();
 		String reqId = transferData.getReqId();
@@ -34,7 +33,10 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 			//// TODO: 2018-03-20 应该返回消息，关闭失效的链路
 			log.warn(String.format("Can't find channel of id:%s, it's probably closed.", reqId));
 		} else {
-		    writeData2RealServer(context,facadeChannel,transferData.getData());
+			byte[] bytes = transferData.getData();
+			ByteBuf buf = context.alloc().buffer(bytes.length);
+			buf.writeBytes(bytes);
+			facadeChannel.writeAndFlush(buf);
 		}
 	}
 
