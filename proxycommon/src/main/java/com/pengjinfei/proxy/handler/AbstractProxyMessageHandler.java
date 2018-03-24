@@ -5,12 +5,14 @@ import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created on 3/18/18
  *
  * @author Pengjinfei
  */
+@Slf4j
 public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
 	protected ChannelManager manager = new ChannelManager();
@@ -59,5 +61,11 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		manager.close();
 		super.channelInactive(ctx);
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+	    log.error("error occurred.",cause);
+	    ctx.channel().close();
 	}
 }

@@ -12,6 +12,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -89,7 +90,7 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
     private void newChannelAndWrite(String reqId, int port, ByteBuf buf, Channel proxyChannel) {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(proxyChannel.eventLoop())
-                .channel(NioSocketChannel.class)
+                .channel(EpollSocketChannel.class)
                 .handler(new RealServerHander(port, reqId, proxyChannel));
         bootstrap.connect(portMap.get(port)).addListener((ChannelFutureListener) future -> {
             //// TODO: 3/22/18  如果服务器连接失败 关闭远程端口

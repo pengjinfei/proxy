@@ -1,5 +1,5 @@
 proxy:
-  ip: 127.0.0.1
+  ip: 120.25.95.166
   port: 8888
   passwd: PrrukLRXJfwWbMsn
   mapping:

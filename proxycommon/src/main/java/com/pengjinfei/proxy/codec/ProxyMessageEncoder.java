@@ -7,12 +7,14 @@ import com.pengjinfei.proxy.util.FstSerializerUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created on 3/17/18
  *
  * @author Pengjinfei
  */
+@Slf4j
 public class ProxyMessageEncoder extends MessageToByteEncoder<ProxyMessage>{
 
     private final byte[] passwd;
@@ -28,10 +30,15 @@ public class ProxyMessageEncoder extends MessageToByteEncoder<ProxyMessage>{
         if (proxyMessage == null ) {
             throw new Exception("The encode message is null");
         }
-        int writerIndex = byteBuf.writerIndex();
-        byteBuf.writeBytes(LENGTH_PLACEHOLDER);
-        byte[] bytes = AesUtils.encrypt(FstSerializerUtils.serialize(proxyMessage),passwd);
-        byteBuf.writeBytes(bytes);
-        byteBuf.setInt(writerIndex, byteBuf.writerIndex() - writerIndex - NettyConstant.FIELD_LENGTH);
+        try {
+            int writerIndex = byteBuf.writerIndex();
+            byteBuf.writeBytes(LENGTH_PLACEHOLDER);
+            byte[] bytes = AesUtils.encrypt(FstSerializerUtils.serialize(proxyMessage),passwd);
+            byteBuf.writeBytes(bytes);
+            byteBuf.setInt(writerIndex, byteBuf.writerIndex() - writerIndex - NettyConstant.FIELD_LENGTH);
+        } catch (Exception e) {
+            log.error("encode error",e);
+            channelHandlerContext.channel().close();
+        }
     }
 }

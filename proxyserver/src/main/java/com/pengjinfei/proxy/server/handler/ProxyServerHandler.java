@@ -9,10 +9,12 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +44,8 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 
 	@Override
 	protected void handleReq(ChannelHandlerContext context, ProxyMessage message) {
+        InetSocketAddress socketAddress = ((InetSocketAddress) context.channel().remoteAddress());
+        log.info("recieve connection fomr ip:{} port:{}", socketAddress.getHostName(), socketAddress.getPort());
 		ConnectReq connectReq = (ConnectReq) message.getBody();
 		List<Integer> portList = connectReq.getPortList();
 		ProxyMessage<ConnectResp> respProxyMessage = new ProxyMessage<>();
@@ -72,7 +76,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 		for (Integer succPort : succPorts) {
 			ServerBootstrap bootstrap = new ServerBootstrap();
 			bootstrap.group(channel.eventLoop())
-					.channel(NioServerSocketChannel.class)
+					.channel(EpollServerSocketChannel.class)
 					.option(ChannelOption.SO_BACKLOG, 100)
 					.childHandler(new FacadeServerHandler(succPort, channel, manager));
 			bootstrap.bind(succPort).addListener((ChannelFutureListener) future -> manager.add(future.channel()));
