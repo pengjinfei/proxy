@@ -6,3 +6,9 @@ proxy:
     - facadePort: 8123
       realPort: 8000
       realIp: 127.0.0.1
+    - facadePort: 10180
+      realPort: 10080
+      realIp: 127.0.0.1
+    - facadePort: 10122
+      realPort: 10022
+      realIp: 127.0.0.1

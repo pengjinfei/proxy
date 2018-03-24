@@ -9,8 +9,8 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class ClientApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... strings) throws Exception {
-		EventLoopGroup group = new NioEventLoopGroup();
+		EventLoopGroup group = new EpollEventLoopGroup();
 		connect(group);
 	}
 
