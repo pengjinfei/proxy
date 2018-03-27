@@ -11,9 +11,10 @@ public enum  MessageType implements Serializable{
     /*
     客户端连接请求
      */
-    CONNECT_REQ,
-    CONNECT_RESP,
+    PROXY_REQ,
+    PROXY_RESP,
     DATA,
     HEART_BEAT_REQ,
-    HEART_BEAT_RESP;
+    HEART_BEAT_RESP,
+    DISCONNECT;
 }

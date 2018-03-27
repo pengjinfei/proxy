@@ -37,4 +37,15 @@ public class RealServerHander extends SimpleChannelInboundHandler<ByteBuf> {
 		message.setBody(data);
 		proxyChannel.writeAndFlush(message);
 	}
+
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		ProxyMessage<TransferData> msg = new ProxyMessage<>();
+		msg.setMessageType(MessageType.DISCONNECT);
+		TransferData data = new TransferData();
+		data.setPort(port);
+		data.setReqId(reqId);
+		msg.setBody(data);
+		proxyChannel.writeAndFlush(msg);
+	}
 }

@@ -5,12 +5,9 @@ import com.pengjinfei.proxy.message.*;
 import com.pengjinfei.proxy.util.NetUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOption;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 
@@ -30,6 +27,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 	protected void handleData(ChannelHandlerContext context, ProxyMessage message) {
 		TransferData transferData = (TransferData) message.getBody();
 		String reqId = transferData.getReqId();
+		log.info("get response id:{}",reqId);
 		Channel facadeChannel = manager.find(reqId);
 		if (facadeChannel == null) {
 			//// TODO: 2018-03-20 应该返回消息，关闭失效的链路
@@ -38,7 +36,11 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 			byte[] bytes = transferData.getData();
 			ByteBuf buf = context.alloc().buffer(bytes.length);
 			buf.writeBytes(bytes);
-			facadeChannel.writeAndFlush(buf);
+			facadeChannel.writeAndFlush(buf).addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    log.info("write response finished to id:{}", future.channel().id().asLongText());
+                }
+            });
 		}
 	}
 
@@ -50,7 +52,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 		List<Integer> portList = connectReq.getPortList();
 		ProxyMessage<ConnectResp> respProxyMessage = new ProxyMessage<>();
 		ConnectResp resp = new ConnectResp();
-		respProxyMessage.setMessageType(MessageType.CONNECT_RESP);
+		respProxyMessage.setMessageType(MessageType.PROXY_RESP);
 		respProxyMessage.setBody(resp);
 		final Channel channel = context.channel();
 		if (CollectionUtils.isEmpty(portList)) {
@@ -75,7 +77,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 		}
 		for (Integer succPort : succPorts) {
 			ServerBootstrap bootstrap = new ServerBootstrap();
-			bootstrap.group(channel.eventLoop())
+			bootstrap.group(channel.eventLoop().parent())
 					.channel(EpollServerSocketChannel.class)
 					.option(ChannelOption.SO_BACKLOG, 100)
 					.childHandler(new FacadeServerHandler(succPort, channel, manager));
@@ -91,6 +93,17 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 		resp.setMessageType(MessageType.HEART_BEAT_RESP);
 		resp.setBody(true);
 		context.channel().writeAndFlush(resp);
+	}
+
+	@Override
+	protected void handleDisconnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
+		TransferData transferData = (TransferData) proxyMessage.getBody();
+		String reqId = transferData.getReqId();
+		log.info("disconnect id:{}",reqId);
+		Channel facadeChannel = manager.find(reqId);
+		if (facadeChannel != null) {
+			facadeChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+		}
 	}
 
 	@Override

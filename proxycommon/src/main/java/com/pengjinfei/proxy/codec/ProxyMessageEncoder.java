@@ -2,7 +2,6 @@ package com.pengjinfei.proxy.codec;
 
 import com.pengjinfei.proxy.constants.NettyConstant;
 import com.pengjinfei.proxy.message.ProxyMessage;
-import com.pengjinfei.proxy.util.AesUtils;
 import com.pengjinfei.proxy.util.FstSerializerUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,7 +32,7 @@ public class ProxyMessageEncoder extends MessageToByteEncoder<ProxyMessage>{
         try {
             int writerIndex = byteBuf.writerIndex();
             byteBuf.writeBytes(LENGTH_PLACEHOLDER);
-            byte[] bytes = AesUtils.encrypt(FstSerializerUtils.serialize(proxyMessage),passwd);
+            byte[] bytes =FstSerializerUtils.serialize(proxyMessage);
             byteBuf.writeBytes(bytes);
             byteBuf.setInt(writerIndex, byteBuf.writerIndex() - writerIndex - NettyConstant.FIELD_LENGTH);
         } catch (Exception e) {

@@ -28,6 +28,7 @@ public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		log.info("new connections id:{}",ctx.channel().id().asLongText());
 		boolean add = manager.add(ctx.channel());
 		if (add) {
 			super.channelActive(ctx);
@@ -39,6 +40,7 @@ public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
 	@Override
 	protected void messageReceived(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+		log.info("new request id:{}",ctx.channel().id().asLongText());
 		byte[] bytes = new byte[msg.readableBytes()];
 		msg.readBytes(bytes);
 		ProxyMessage<TransferData> message = new ProxyMessage<TransferData>();

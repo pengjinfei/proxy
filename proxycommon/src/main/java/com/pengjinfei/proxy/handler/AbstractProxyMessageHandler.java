@@ -21,13 +21,13 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 	protected void messageReceived(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) throws Exception {
 		MessageType messageType = proxyMessage.getMessageType();
 		switch (messageType) {
-			case CONNECT_REQ:
+			case PROXY_REQ:
 				handleReq(channelHandlerContext, proxyMessage);
 				break;
 			case DATA:
 				handleData(channelHandlerContext, proxyMessage);
 				break;
-			case CONNECT_RESP:
+			case PROXY_RESP:
 				handleResp(channelHandlerContext, proxyMessage);
 			case HEART_BEAT_REQ:
 				handleHeartBeatReq(channelHandlerContext, proxyMessage);
@@ -35,9 +35,15 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 			case HEART_BEAT_RESP:
 				handleHeartBeatResp(channelHandlerContext, proxyMessage);
 				break;
+			case DISCONNECT:
+				handleDisconnect(channelHandlerContext, proxyMessage);
+				break;
 			default:
 				break;
 		}
+	}
+
+	protected void handleDisconnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
 	}
 
 	protected void handleHeartBeatResp(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {

@@ -13,7 +13,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -108,7 +107,7 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) {
 		ProxyMessage<ConnectReq> msg = new ProxyMessage<>();
-		msg.setMessageType(MessageType.CONNECT_REQ);
+		msg.setMessageType(MessageType.PROXY_REQ);
 		ConnectReq connectReq = new ConnectReq();
 		List<Integer> portList = new LinkedList<>();
 		for (Map.Entry<Integer, SocketAddress> entry : portMap.entrySet()) {
