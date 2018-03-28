@@ -27,7 +27,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 	protected void handleData(ChannelHandlerContext context, ProxyMessage message) {
 		TransferData transferData = (TransferData) message.getBody();
 		String reqId = transferData.getReqId();
-		log.info("get response id:{}",reqId);
+		log.debug("get response id:{}",reqId);
 		Channel facadeChannel = manager.find(reqId);
 		if (facadeChannel == null) {
 			//// TODO: 2018-03-20 应该返回消息，关闭失效的链路
@@ -38,7 +38,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 			buf.writeBytes(bytes);
 			facadeChannel.writeAndFlush(buf).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
-                    log.info("write response finished to id:{}", future.channel().id().asLongText());
+                    log.debug("write response finished to id:{}", future.channel().id().asLongText());
                 }
             });
 		}
@@ -99,7 +99,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 	protected void handleDisconnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
 		TransferData transferData = (TransferData) proxyMessage.getBody();
 		String reqId = transferData.getReqId();
-		log.info("disconnect id:{}",reqId);
+		log.debug("disconnect id:{}",reqId);
 		Channel facadeChannel = manager.find(reqId);
 		if (facadeChannel != null) {
 			facadeChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);

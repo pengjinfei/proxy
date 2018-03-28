@@ -1,5 +1,6 @@
 package com.pengjinfei.proxy.codec;
 
+import com.pengjinfei.proxy.util.AesUtils;
 import com.pengjinfei.proxy.util.FstSerializerUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,7 +33,7 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
         byte[] bytes = new byte[size];
         frame.readBytes(bytes, 0, size);
         ReferenceCountUtil.release(frame);
-        return FstSerializerUtils.deserialize(bytes);
+        return FstSerializerUtils.deserialize(AesUtils.decrypt(bytes,passwd));
     }
 
 }

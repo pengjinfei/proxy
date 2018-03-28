@@ -99,11 +99,6 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
         });
     }
 
-    @Override
-	protected void handleReq(ChannelHandlerContext context, ProxyMessage message) {
-
-	}
-
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) {
 		ProxyMessage<ConnectReq> msg = new ProxyMessage<>();
