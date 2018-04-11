@@ -58,4 +58,18 @@ public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 		log.error("error occurred", cause);
 		ctx.channel().close();
 	}
+
+	@Override
+	public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+		ProxyMessage<TransferData> msg = new ProxyMessage<>();
+		msg.setMessageType(MessageType.WRITE_FLAG);
+		TransferData data = new TransferData();
+		data.setPort(port);
+		data.setReqId(ctx.channel().id().asLongText());
+		byte[] body = ctx.channel().isWritable() ? new byte[]{0x01} : new byte[]{0x00};
+		data.setData(body);
+		msg.setBody(data);
+		proxyChannel.writeAndFlush(msg);
+		super.channelWritabilityChanged(ctx);
+	}
 }

@@ -74,15 +74,17 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
         ByteBuf buf = context.alloc().buffer(bytes.length);
         buf.writeBytes(bytes);
         Channel proxyChannel = context.channel();
-        if (channel == null || !channel.isWritable()) {
+        if (channel == null ){
             newChannelAndWrite(reqId, port, buf, proxyChannel);
+		} else if (!channel.isWritable()) {
+        	log.info("realChannel:{} is not writable",channel.id().asLongText());
 		} else {
-            channel.writeAndFlush(buf).addListener(future -> {
-                if (!future.isSuccess()) {
-                    log.warn("channel exists but write failed.");
-                    newChannelAndWrite(reqId,port,buf,proxyChannel);
-                }
-            });
+			channel.writeAndFlush(buf).addListener(future -> {
+				if (!future.isSuccess()) {
+					log.warn("channel exists but write failed.");
+					newChannelAndWrite(reqId, port, buf, proxyChannel);
+				}
+			});
 		}
 	}
 

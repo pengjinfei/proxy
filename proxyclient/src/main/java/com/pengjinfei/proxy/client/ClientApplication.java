@@ -1,5 +1,6 @@
 package com.pengjinfei.proxy.client;
 
+import com.pengjinfei.proxy.client.configuration.ExhaustedTimer;
 import com.pengjinfei.proxy.client.configuration.ProxyConfiguration;
 import com.pengjinfei.proxy.client.handler.ProxyClientHandler;
 import com.pengjinfei.proxy.codec.ProxyMessageDecoder;
@@ -20,7 +21,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author PENGJINFEI533
@@ -33,7 +33,7 @@ public class ClientApplication implements CommandLineRunner {
 	@Autowired
 	private ProxyConfiguration configuration;
 
-	private AtomicInteger retryTimes = new AtomicInteger(0);
+	private ExhaustedTimer timer = new ExhaustedTimer(5, TimeUnit.SECONDS);
 
 	private static final int MAX_RETRY = 5;
 
@@ -65,10 +65,10 @@ public class ClientApplication implements CommandLineRunner {
 			exception = e;
 			log.error("Error occurred in bootstrap.", e);
 		} finally {
-			int i = retryTimes.incrementAndGet();
+			int i = timer.incrementAndGet();
 			if (i >= MAX_RETRY) {
 				group.shutdownGracefully();
-			} else if (exception != null && exception instanceof InterruptedException) {
+			} else if (exception instanceof InterruptedException) {
 				group.shutdownGracefully();
 			} else {
 				try {

@@ -52,4 +52,8 @@ public class ChannelManager {
 		c.closeFuture().removeListener(remover);
 		return true;
 	}
+
+	public void setChannelsAutoRead(boolean autoRead) {
+		channels.forEach((id,channel)-> channel.config().setAutoRead(autoRead));
+	}
 }

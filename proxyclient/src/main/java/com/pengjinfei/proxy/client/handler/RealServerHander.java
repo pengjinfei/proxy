@@ -9,6 +9,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author PENGJINFEI533
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @ChannelHandler.Sharable
+@Slf4j
 public class RealServerHander extends SimpleChannelInboundHandler<ByteBuf> {
 
 	private final int port;
@@ -47,5 +49,20 @@ public class RealServerHander extends SimpleChannelInboundHandler<ByteBuf> {
 		data.setReqId(reqId);
 		msg.setBody(data);
 		proxyChannel.writeAndFlush(msg);
+	}
+
+	@Override
+	public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+		log.info("realChannel:{} writability changed.",ctx.channel().id().asLongText());
+		ProxyMessage<TransferData> msg = new ProxyMessage<>();
+		msg.setMessageType(MessageType.WRITE_FLAG);
+		TransferData data = new TransferData();
+		data.setPort(port);
+		data.setReqId(reqId);
+		byte[] body = ctx.channel().isWritable() ? new byte[]{0x01} : new byte[]{0x00};
+		data.setData(body);
+		msg.setBody(data);
+		proxyChannel.writeAndFlush(msg);
+		super.channelWritabilityChanged(ctx);
 	}
 }

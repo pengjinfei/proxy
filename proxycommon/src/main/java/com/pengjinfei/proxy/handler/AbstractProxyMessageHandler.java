@@ -3,6 +3,8 @@ package com.pengjinfei.proxy.handler;
 import com.pengjinfei.proxy.channel.ChannelManager;
 import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
+import com.pengjinfei.proxy.message.TransferData;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -38,9 +40,28 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 			case DISCONNECT:
 				handleDisconnect(channelHandlerContext, proxyMessage);
 				break;
+			case WRITE_FLAG:
+				handleWriteFlag(channelHandlerContext, proxyMessage);
+				break;
 			default:
 				break;
 		}
+	}
+
+	private void handleWriteFlag(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
+		TransferData transferData = (TransferData) proxyMessage.getBody();
+		boolean autoRead = transferData.getData()[0] == 0x01;
+		String reqId = transferData.getReqId();
+		Channel channel = manager.find(reqId);
+		if (channel != null) {
+			channel.config().setAutoRead(autoRead);
+		}
+	}
+
+	@Override
+	public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+	    manager.setChannelsAutoRead(ctx.channel().isWritable());
+		super.channelWritabilityChanged(ctx);
 	}
 
 	protected void handleDisconnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {

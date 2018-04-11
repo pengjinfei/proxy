@@ -99,9 +99,9 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 	protected void handleDisconnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
 		TransferData transferData = (TransferData) proxyMessage.getBody();
 		String reqId = transferData.getReqId();
-		log.debug("disconnect id:{}",reqId);
 		Channel facadeChannel = manager.find(reqId);
 		if (facadeChannel != null) {
+			log.info("close facadeChannel:{} by realServer.", reqId);
 			facadeChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 		}
 	}
