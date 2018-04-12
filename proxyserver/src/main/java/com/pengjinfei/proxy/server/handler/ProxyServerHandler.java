@@ -4,9 +4,10 @@ import com.pengjinfei.proxy.handler.AbstractProxyMessageHandler;
 import com.pengjinfei.proxy.message.*;
 import com.pengjinfei.proxy.util.NetUtils;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -22,27 +23,6 @@ import java.util.List;
  */
 @Slf4j
 public class ProxyServerHandler extends AbstractProxyMessageHandler {
-
-	@Override
-	protected void handleData(ChannelHandlerContext context, ProxyMessage message) {
-		TransferData transferData = (TransferData) message.getBody();
-		String reqId = transferData.getReqId();
-		log.debug("get response id:{}",reqId);
-		Channel facadeChannel = manager.find(reqId);
-		if (facadeChannel == null) {
-			//// TODO: 2018-03-20 应该返回消息，关闭失效的链路
-			log.warn(String.format("Can't find channel of id:%s, it's probably closed.", reqId));
-		} else {
-			byte[] bytes = transferData.getData();
-			ByteBuf buf = context.alloc().buffer(bytes.length);
-			buf.writeBytes(bytes);
-			facadeChannel.writeAndFlush(buf).addListener((ChannelFutureListener) future -> {
-                if (future.isSuccess()) {
-                    log.debug("write response finished to id:{}", future.channel().id().asLongText());
-                }
-            });
-		}
-	}
 
 	@Override
 	protected void handleReq(ChannelHandlerContext context, ProxyMessage message) {
@@ -87,23 +67,19 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 		channel.writeAndFlush(resp);
 	}
 
-	@Override
+    @Override
+    protected void handleConnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
+        TransferData data = (TransferData) proxyMessage.getBody();
+        String reqId = data.getReqId();
+        manager.setChannelAutoRead(reqId, true);
+    }
+
+    @Override
 	protected void handleHeartBeatReq(ChannelHandlerContext context, ProxyMessage message) {
 		ProxyMessage<Boolean> resp = new ProxyMessage<>();
 		resp.setMessageType(MessageType.HEART_BEAT_RESP);
 		resp.setBody(true);
 		context.channel().writeAndFlush(resp);
-	}
-
-	@Override
-	protected void handleDisconnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
-		TransferData transferData = (TransferData) proxyMessage.getBody();
-		String reqId = transferData.getReqId();
-		Channel facadeChannel = manager.find(reqId);
-		if (facadeChannel != null) {
-			log.info("close facadeChannel:{} by realServer.", reqId);
-			facadeChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-		}
 	}
 
 	@Override

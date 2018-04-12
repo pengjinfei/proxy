@@ -1,6 +1,9 @@
 package com.pengjinfei.proxy.channel;
 
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import io.netty.util.internal.PlatformDependent;
 
 import java.util.Map;
@@ -12,9 +15,19 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ChannelManager {
 
+	public static ChannelManager getInstance() {
+		return INSTANCE;
+	}
+
+	private static final ChannelManager INSTANCE = new ChannelManager();
+
 	private final ConcurrentMap<String, Channel> channels = PlatformDependent.newConcurrentHashMap();
 
 	private final ChannelFutureListener remover = future -> remove(future.channel());
+
+	private volatile boolean isProxyWritable = true;
+
+	private static final AttributeKey<Boolean> CHANNEL_WRITEABLE = AttributeKey.newInstance("channel_writeable");
 
 	public Channel find(String id) {
 		return channels.get(id);
@@ -38,7 +51,7 @@ public class ChannelManager {
 		return add;
 	}
 
-	private boolean remove(Object o) {
+	public Channel remove(Object o) {
 		Channel c = null;
 		if (o instanceof String) {
 			c = channels.remove(o);
@@ -47,13 +60,37 @@ public class ChannelManager {
 			c = channels.remove(c.id().asLongText());
 		}
 		if (c == null) {
-			return false;
+			return null;
 		}
 		c.closeFuture().removeListener(remover);
-		return true;
+		return c;
 	}
 
-	public void setChannelsAutoRead(boolean autoRead) {
-		channels.forEach((id,channel)-> channel.config().setAutoRead(autoRead));
+	public void setProxyWritable(boolean autoRead) {
+		isProxyWritable = autoRead;
+		channels.forEach((id,channel)->{
+			Attribute<Boolean> attr = channel.attr(CHANNEL_WRITEABLE);
+			if (autoRead && (attr == null || attr.get() == null || attr.get())) {
+				channel.config().setAutoRead(true);
+			} else {
+				channel.config().setAutoRead(false);
+			}
+		});
+	}
+
+	public void setChannelAutoRead(Channel channel,boolean autoRead) {
+		channel.attr(CHANNEL_WRITEABLE).set(autoRead);
+		if (isProxyWritable && autoRead) {
+			channel.config().setAutoRead(true);
+		} else {
+			channel.config().setAutoRead(false);
+		}
+	}
+
+	public void setChannelAutoRead(String reqId, boolean autoRead) {
+		Channel channel = channels.get(reqId);
+		if (channel != null) {
+			setChannelAutoRead(channel, autoRead);
+		}
 	}
 }

@@ -7,8 +7,8 @@ import com.pengjinfei.proxy.message.ConnectReq;
 import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
+import com.pengjinfei.proxy.util.MessageUtils;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -65,43 +65,6 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 	}
 
 	@Override
-	protected void handleData(ChannelHandlerContext context, ProxyMessage message) {
-		TransferData data = (TransferData) message.getBody();
-		String reqId = data.getReqId();
-        int port = data.getPort();
-        Channel channel = manager.find(reqId);
-        byte[] bytes = data.getData();
-        ByteBuf buf = context.alloc().buffer(bytes.length);
-        buf.writeBytes(bytes);
-        Channel proxyChannel = context.channel();
-        if (channel == null ){
-            newChannelAndWrite(reqId, port, buf, proxyChannel);
-		} else if (!channel.isWritable()) {
-        	log.info("realChannel:{} is not writable",channel.id().asLongText());
-		} else {
-			channel.writeAndFlush(buf).addListener(future -> {
-				if (!future.isSuccess()) {
-					log.warn("channel exists but write failed.");
-					newChannelAndWrite(reqId, port, buf, proxyChannel);
-				}
-			});
-		}
-	}
-
-    private void newChannelAndWrite(String reqId, int port, ByteBuf buf, Channel proxyChannel) {
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(proxyChannel.eventLoop())
-                .channel(EpollSocketChannel.class)
-                .handler(new RealServerHander(port, reqId, proxyChannel));
-        bootstrap.connect(portMap.get(port)).addListener((ChannelFutureListener) future -> {
-            //// TODO: 3/22/18  如果服务器连接失败 关闭远程端口
-            Channel realChannel = future.channel();
-            manager.add(reqId, realChannel);
-            realChannel.writeAndFlush(buf);
-        });
-    }
-
-	@Override
 	public void channelActive(ChannelHandlerContext ctx) {
 		ProxyMessage<ConnectReq> msg = new ProxyMessage<>();
 		msg.setMessageType(MessageType.PROXY_REQ);
@@ -113,5 +76,27 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 		connectReq.setPortList(portList);
 		msg.setBody(connectReq);
 		ctx.channel().writeAndFlush(msg);
+	}
+
+	@Override
+	protected void handleConnect(ChannelHandlerContext context, ProxyMessage proxyMessage) {
+		TransferData data = (TransferData) proxyMessage.getBody();
+		String reqId = data.getReqId();
+		int port = data.getPort();
+		Channel proxyChannel = context.channel();
+		Bootstrap bootstrap = new Bootstrap();
+		bootstrap.group(proxyChannel.eventLoop())
+				.channel(EpollSocketChannel.class)
+				.handler(new RealServerHander(port, reqId, proxyChannel));
+		bootstrap.connect(portMap.get(port)).addListener((ChannelFutureListener) future -> {
+			if (future.isSuccess()) {
+				Channel realChannel = future.channel();
+				manager.add(reqId, realChannel);
+				manager.setChannelAutoRead(realChannel,true);
+				MessageUtils.writeConnect(proxyChannel, reqId, port);
+			} else {
+				MessageUtils.writeDisconnect(proxyChannel,reqId,port);
+			}
+		});
 	}
 }

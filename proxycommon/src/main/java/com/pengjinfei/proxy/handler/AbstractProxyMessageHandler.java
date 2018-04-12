@@ -4,7 +4,10 @@ import com.pengjinfei.proxy.channel.ChannelManager;
 import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
-	protected ChannelManager manager = new ChannelManager();
+	protected ChannelManager manager = ChannelManager.getInstance();
 
 	@Override
 	protected void messageReceived(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) throws Exception {
@@ -43,9 +46,15 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 			case WRITE_FLAG:
 				handleWriteFlag(channelHandlerContext, proxyMessage);
 				break;
+			case CONNECT:
+				handleConnect(channelHandlerContext, proxyMessage);
+				break;
 			default:
 				break;
 		}
+	}
+
+	protected void handleConnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
 	}
 
 	private void handleWriteFlag(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
@@ -60,11 +69,17 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 
 	@Override
 	public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-	    manager.setChannelsAutoRead(ctx.channel().isWritable());
+	    manager.setProxyWritable(ctx.channel().isWritable());
 		super.channelWritabilityChanged(ctx);
 	}
 
 	protected void handleDisconnect(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
+		TransferData transferData = (TransferData) proxyMessage.getBody();
+		String reqId = transferData.getReqId();
+		Channel channel = manager.remove(reqId);
+		if (channel != null) {
+			channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+		}
 	}
 
 	protected void handleHeartBeatResp(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
@@ -78,7 +93,17 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 
 	}
 
-	protected abstract void handleData(ChannelHandlerContext context, ProxyMessage message);
+	protected  void handleData(ChannelHandlerContext context, ProxyMessage message){
+		TransferData transferData = (TransferData) message.getBody();
+		String reqId = transferData.getReqId();
+		Channel facadeChannel = manager.find(reqId);
+		if (facadeChannel != null) {
+			byte[] bytes = transferData.getData();
+			ByteBuf buf = context.alloc().buffer(bytes.length);
+			buf.writeBytes(bytes);
+			facadeChannel.writeAndFlush(buf);
+		}
+	}
 
 	protected void handleReq(ChannelHandlerContext context, ProxyMessage message) {
 

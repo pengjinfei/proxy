@@ -17,5 +17,6 @@ public enum  MessageType implements Serializable{
     HEART_BEAT_REQ,
     HEART_BEAT_RESP,
     DISCONNECT,
-    WRITE_FLAG;
+    WRITE_FLAG,
+    CONNECT;
 }
