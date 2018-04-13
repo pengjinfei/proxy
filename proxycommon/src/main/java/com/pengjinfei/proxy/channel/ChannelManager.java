@@ -15,6 +15,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ChannelManager {
 
+	private ChannelManager() {
+
+	}
 	public static ChannelManager getInstance() {
 		return INSTANCE;
 	}

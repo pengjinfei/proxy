@@ -31,7 +31,7 @@ public class RealServerHander extends SimpleChannelInboundHandler<ByteBuf> {
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        MessageUtils.writeDisconnect(proxyChannel, reqId, port);
+		MessageUtils.writeDisconnect(proxyChannel, reqId, port, ctx);
 		super.channelInactive(ctx);
 	}
 

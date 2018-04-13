@@ -1,5 +1,6 @@
 package com.pengjinfei.proxy.util;
 
+import com.pengjinfei.proxy.constants.NettyConstant;
 import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
@@ -16,7 +17,13 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class MessageUtils {
 
-    public static void writeDisconnect(Channel proxyChannel, String reqId, int port) {
+    public static void writeDisconnect(Channel proxyChannel, String reqId, int port, ChannelHandlerContext ctx) {
+        if (ctx != null) {
+            Boolean isRemote = ctx.channel().attr(NettyConstant.REMOTE_DISCONNECT).get();
+            if (isRemote != null && isRemote) {
+                return;
+            }
+        }
         ProxyMessage<TransferData> msg = new ProxyMessage<>();
         msg.setMessageType(MessageType.DISCONNECT);
         TransferData data = new TransferData();

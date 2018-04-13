@@ -7,9 +7,6 @@
         </Console>
     </Appenders>
     <Loggers>
-        <logger name="org.springframework.retry" level="debug" additivity="false">
-            <appender-ref ref="Console"/>
-        </logger>
         <Root level="info">
             <AppenderRef ref="Console" />
         </Root>
