@@ -33,7 +33,7 @@ public class ClientApplication implements CommandLineRunner {
 	@Autowired
 	private ProxyConfiguration configuration;
 
-	private ExhaustedTimer timer = new ExhaustedTimer(5, TimeUnit.SECONDS);
+	private ExhaustedTimer timer = new ExhaustedTimer(1, TimeUnit.MINUTES);
 
 	private static final int MAX_RETRY = 5;
 
