@@ -53,6 +53,9 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 				req.setMessageType(MessageType.HEART_BEAT_REQ);
 				req.setBody(true);
 				ctx.channel().writeAndFlush(req);
+			} else if (event.state() == IdleState.READER_IDLE) {
+				log.warn("can not recieve heart beat from server,prepare to close channel");
+				ctx.channel().close();
 			}
 		}
 	}
