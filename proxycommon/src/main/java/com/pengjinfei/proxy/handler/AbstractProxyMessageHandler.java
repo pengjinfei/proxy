@@ -1,6 +1,7 @@
 package com.pengjinfei.proxy.handler;
 
 import com.pengjinfei.proxy.channel.ChannelManager;
+import com.pengjinfei.proxy.constants.NettyConstant;
 import com.pengjinfei.proxy.message.MessageType;
 import com.pengjinfei.proxy.message.ProxyMessage;
 import com.pengjinfei.proxy.message.TransferData;
@@ -78,6 +79,7 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 		String reqId = transferData.getReqId();
 		Channel channel = manager.remove(reqId);
 		if (channel != null) {
+			channel.attr(NettyConstant.REMOTE_DISCONNECT).set(true);
 			channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 		}
 	}

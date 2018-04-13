@@ -1,6 +1,5 @@
 package com.pengjinfei.proxy.client.handler;
 
-import com.pengjinfei.proxy.channel.ChannelManager;
 import com.pengjinfei.proxy.client.configuration.PortMapping;
 import com.pengjinfei.proxy.handler.AbstractProxyMessageHandler;
 import com.pengjinfei.proxy.message.ConnectReq;
@@ -31,8 +30,6 @@ import java.util.Map;
  */
 @Slf4j
 public class ProxyClientHandler extends AbstractProxyMessageHandler {
-
-	private ChannelManager manager = new ChannelManager();
 
 	private final Map<Integer, SocketAddress> portMap = new HashMap<>();
 
@@ -95,7 +92,7 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 				manager.setChannelAutoRead(realChannel,true);
 				MessageUtils.writeConnect(proxyChannel, reqId, port);
 			} else {
-				MessageUtils.writeDisconnect(proxyChannel,reqId,port);
+				MessageUtils.writeDisconnect(proxyChannel, reqId, port, null);
 			}
 		});
 	}

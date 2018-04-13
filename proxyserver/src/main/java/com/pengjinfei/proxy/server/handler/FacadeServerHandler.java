@@ -58,7 +58,7 @@ public class FacadeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		MessageUtils.writeDisconnect(proxyChannel,ctx.channel().id().asLongText(),port);
+		MessageUtils.writeDisconnect(proxyChannel, ctx.channel().id().asLongText(), port, ctx);
 		super.channelInactive(ctx);
 	}
 }
