@@ -1,14 +1,9 @@
 proxy:
-  ip: 120.25.95.166
+  ip: 127.0.0.1
   port: 8888
   passwd: PrrukLRXJfwWbMsn
   mapping:
-    - facadePort: 8123
-      realPort: 8000
-      realIp: 127.0.0.1
-    - facadePort: 10180
+    - facadePort: 10081
       realPort: 10080
       realIp: 127.0.0.1
-    - facadePort: 10122
-      realPort: 10022
-      realIp: 127.0.0.1
+

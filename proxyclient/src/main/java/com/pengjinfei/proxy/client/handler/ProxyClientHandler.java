@@ -12,7 +12,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -86,7 +86,7 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 		Channel proxyChannel = context.channel();
 		Bootstrap bootstrap = new Bootstrap();
 		bootstrap.group(proxyChannel.eventLoop())
-				.channel(EpollSocketChannel.class)
+				.channel(NioSocketChannel.class)
 				.handler(new RealServerHander(port, reqId, proxyChannel));
 		bootstrap.connect(portMap.get(port)).addListener((ChannelFutureListener) future -> {
 			if (future.isSuccess()) {

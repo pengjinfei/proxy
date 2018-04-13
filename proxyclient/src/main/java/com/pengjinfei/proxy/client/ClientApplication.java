@@ -10,9 +10,9 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ public class ClientApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... strings) throws Exception {
-		EventLoopGroup group = new EpollEventLoopGroup();
+		EventLoopGroup group = new NioEventLoopGroup();
 		connect(group);
 	}
 
@@ -48,7 +48,7 @@ public class ClientApplication implements CommandLineRunner {
 		try {
 			Bootstrap bootstrap = new Bootstrap();
 			bootstrap.group(group)
-					.channel(EpollSocketChannel.class)
+					.channel(NioSocketChannel.class)
 					.handler(new ChannelInitializer<SocketChannel>() {
 						@Override
 						protected void initChannel(SocketChannel socketChannel) throws Exception {
