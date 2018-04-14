@@ -15,15 +15,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ChannelManager {
 
-	private ChannelManager() {
-
-	}
-	public static ChannelManager getInstance() {
-		return INSTANCE;
-	}
-
-	private static final ChannelManager INSTANCE = new ChannelManager();
-
 	private final ConcurrentMap<String, Channel> channels = PlatformDependent.newConcurrentHashMap();
 
 	private final ChannelFutureListener remover = future -> remove(future.channel());
