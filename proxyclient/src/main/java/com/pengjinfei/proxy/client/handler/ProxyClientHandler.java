@@ -40,11 +40,6 @@ public class ProxyClientHandler extends AbstractProxyMessageHandler {
 	}
 
 	@Override
-	protected void handleHeartBeatResp(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) {
-		log.debug("get response from server");
-	}
-
-	@Override
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		if (evt instanceof IdleStateEvent) {
 			IdleStateEvent event = (IdleStateEvent) evt;

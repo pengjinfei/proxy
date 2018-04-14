@@ -27,7 +27,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 	@Override
 	protected void handleReq(ChannelHandlerContext context, ProxyMessage message) {
         InetSocketAddress socketAddress = ((InetSocketAddress) context.channel().remoteAddress());
-        log.info("recieve connection fomr ip:{} port:{}", socketAddress.getHostName(), socketAddress.getPort());
+        log.debug("recieve connection from ip:{} port:{}", socketAddress.getHostName(), socketAddress.getPort());
 		ConnectReq connectReq = (ConnectReq) message.getBody();
 		List<Integer> portList = connectReq.getPortList();
 		ProxyMessage<ConnectResp> respProxyMessage = new ProxyMessage<>();
@@ -52,6 +52,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 		if (failPorts.size() > 0 || succPorts.size() == 0) {
 			resp.setRespType(RespType.PORT_NOT_AVALIABLE);
 			resp.setFailPortList(failPorts);
+			log.warn("port {} not avaliable,close channel.",failPorts);
 			channel.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE);
 			return;
 		}
@@ -63,6 +64,7 @@ public class ProxyServerHandler extends AbstractProxyMessageHandler {
 					.childHandler(new FacadeServerHandler(succPort, channel, manager));
 			bootstrap.bind(succPort).addListener((ChannelFutureListener) future -> manager.add(future.channel()));
 		}
+		log.debug("request ports {} passed",succPorts);
 		resp.setRespType(RespType.SUCCESS);
 		channel.writeAndFlush(resp);
 	}

@@ -28,26 +28,34 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 		MessageType messageType = proxyMessage.getMessageType();
 		switch (messageType) {
 			case PROXY_REQ:
+				log.debug("[MESSAGE] - PROXY_REQ");
 				handleReq(channelHandlerContext, proxyMessage);
 				break;
 			case DATA:
+				log.debug("[MESSAGE] - DATA");
 				handleData(channelHandlerContext, proxyMessage);
 				break;
 			case PROXY_RESP:
+				log.debug("[MESSAGE] - PROXY_RESP");
 				handleResp(channelHandlerContext, proxyMessage);
 			case HEART_BEAT_REQ:
+				log.debug("[MESSAGE] - HEART_BEAT_REQ");
 				handleHeartBeatReq(channelHandlerContext, proxyMessage);
 				break;
 			case HEART_BEAT_RESP:
+				log.debug("[MESSAGE] - HEART_BEAT_RESP");
 				handleHeartBeatResp(channelHandlerContext, proxyMessage);
 				break;
 			case DISCONNECT:
+				log.debug("[MESSAGE] - DISCONNECT");
 				handleDisconnect(channelHandlerContext, proxyMessage);
 				break;
 			case WRITE_FLAG:
+				log.debug("[MESSAGE] - WRITE_FLAG");
 				handleWriteFlag(channelHandlerContext, proxyMessage);
 				break;
 			case CONNECT:
+				log.debug("[MESSAGE] - CONNECT");
 				handleConnect(channelHandlerContext, proxyMessage);
 				break;
 			default:
@@ -70,6 +78,7 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 
 	@Override
 	public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+		log.debug("proxy channel writablity changed to {}", ctx.channel().isWritable());
 	    manager.setProxyWritable(ctx.channel().isWritable());
 		super.channelWritabilityChanged(ctx);
 	}
@@ -113,6 +122,7 @@ public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHa
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		log.debug("proxy channel not active");
 		manager.close();
 		super.channelInactive(ctx);
 	}
