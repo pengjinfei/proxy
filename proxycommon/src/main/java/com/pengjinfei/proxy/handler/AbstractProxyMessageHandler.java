@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractProxyMessageHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
-	protected ChannelManager manager = ChannelManager.getInstance();
+	protected ChannelManager manager = new ChannelManager();
 
 	@Override
 	protected void messageReceived(ChannelHandlerContext channelHandlerContext, ProxyMessage proxyMessage) throws Exception {
