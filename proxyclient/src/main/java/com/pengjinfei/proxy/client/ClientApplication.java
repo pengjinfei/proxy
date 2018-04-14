@@ -67,8 +67,10 @@ public class ClientApplication implements CommandLineRunner {
 		} finally {
 			int i = timer.incrementAndGet();
 			if (i >= MAX_RETRY) {
+				log.error("server closed due to exausted times");
 				group.shutdownGracefully();
 			} else if (exception instanceof InterruptedException) {
+				log.error("server closed due to interrupted.");
 				group.shutdownGracefully();
 			} else {
 				try {
