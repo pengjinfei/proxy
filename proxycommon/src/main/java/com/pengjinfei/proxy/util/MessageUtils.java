@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created on 4/12/18
@@ -15,6 +16,7 @@ import lombok.experimental.UtilityClass;
  * @author Pengjinfei
  */
 @UtilityClass
+@Slf4j
 public class MessageUtils {
 
     public static void writeDisconnect(Channel proxyChannel, String reqId, int port, ChannelHandlerContext ctx) {
@@ -24,6 +26,7 @@ public class MessageUtils {
                 return;
             }
         }
+        log.debug("write disconnect to reqId[{}] port[{}]", reqId, port);
         ProxyMessage<TransferData> msg = new ProxyMessage<>();
         msg.setMessageType(MessageType.DISCONNECT);
         TransferData data = new TransferData();
@@ -34,6 +37,7 @@ public class MessageUtils {
     }
 
     public static void writeConnect(Channel proxyChannel, String reqId, int port) {
+        log.debug("write connect to reqId[{}] port[{}]", reqId, port);
         ProxyMessage<TransferData> msg = new ProxyMessage<>();
         msg.setMessageType(MessageType.CONNECT);
         TransferData data = new TransferData();
@@ -44,6 +48,7 @@ public class MessageUtils {
     }
 
     public static void writeWriteFlag(Channel proxyChannel, String reqId, int port, ChannelHandlerContext ctx) {
+        log.debug("write writeFlag[{}] to reqId[{}] port[{}]", ctx.channel().isWritable(), reqId, port);
         ProxyMessage<TransferData> msg = new ProxyMessage<>();
         msg.setMessageType(MessageType.WRITE_FLAG);
         TransferData data = new TransferData();
@@ -56,6 +61,7 @@ public class MessageUtils {
     }
 
     public static void writeData(Channel proxyChannel, String reqId, int port, ByteBuf msg) {
+        log.debug("write data to reqId[{}] port[{}]", reqId, port);
         byte[] bytes = new byte[msg.readableBytes()];
         msg.readBytes(bytes);
         ProxyMessage<TransferData> message = new ProxyMessage<>();
