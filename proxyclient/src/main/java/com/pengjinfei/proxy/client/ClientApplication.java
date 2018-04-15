@@ -55,7 +55,7 @@ public class ClientApplication implements CommandLineRunner {
 							socketChannel.pipeline()
 									.addLast(new ProxyMessageDecoder(NettyConstant.MAX_FRAME_LENGTH, 0, NettyConstant.FIELD_LENGTH, configuration.getPasswd().getBytes()))
 									.addLast(new ProxyMessageEncoder(configuration.getPasswd().getBytes()))
-									.addLast(new IdleStateHandler(25, 11,0))
+									.addLast(new IdleStateHandler(NettyConstant.PROXY_READ_TIMEOUT, NettyConstant.PROXY_WRITE_TIMEOUT,0))
 									.addLast(new ProxyClientHandler(configuration.getMapping()));
 						}
 					});

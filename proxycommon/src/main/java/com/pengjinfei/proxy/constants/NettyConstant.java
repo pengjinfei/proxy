@@ -13,7 +13,11 @@ public interface NettyConstant {
 
     int MAX_FRAME_LENGTH = 10 * 1024 * 1024;
 
-    int READ_TIMEOUT = 50;
+    int SERVER_READ_TIMEOUT = 23;
+
+    int PROXY_READ_TIMEOUT = 25;
+
+    int PROXY_WRITE_TIMEOUT = 11;
 
     AttributeKey<Boolean> REMOTE_DISCONNECT = AttributeKey.newInstance("remote_disconnect");
 }

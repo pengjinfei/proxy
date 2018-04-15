@@ -53,7 +53,7 @@ public class SeverApplication implements CommandLineRunner{
                             socketChannel.pipeline()
                                     .addLast(new ProxyMessageDecoder(NettyConstant.MAX_FRAME_LENGTH,0,NettyConstant.FIELD_LENGTH,passwd.getBytes()))
                                     .addLast(new ProxyMessageEncoder(passwd.getBytes()))
-                                    .addLast(new ReadTimeoutHandler(NettyConstant.READ_TIMEOUT))
+                                    .addLast(new ReadTimeoutHandler(NettyConstant.SERVER_READ_TIMEOUT))
                                     .addLast(new ProxyServerHandler());
                         }
                     });
