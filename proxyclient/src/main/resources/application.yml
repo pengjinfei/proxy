@@ -1,7 +1,8 @@
 proxy:
-  ip: 120.25.95.166
+  ip: 39.108.82.36
   port: 8888
   passwd: PrrukLRXJfwWbMsn
+  maxTry: 10
   mapping:
     - facadePort: 8123
       realPort: 8000

@@ -16,6 +16,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -35,10 +36,15 @@ public class ClientApplication implements CommandLineRunner {
 
 	private ExhaustedTimer timer = new ExhaustedTimer(1, TimeUnit.MINUTES);
 
-	private static final int MAX_RETRY = 5;
+	@Value("${proxy.maxTry}")
+	private int maxRetry;
 
 	@Override
 	public void run(String... strings) throws Exception {
+		if (maxRetry == 0) {
+			maxRetry = Integer.MAX_VALUE;
+		}
+		log.info("max try:{}", maxRetry);
 		EventLoopGroup group = new EpollEventLoopGroup();
 		connect(group);
 	}
@@ -66,7 +72,7 @@ public class ClientApplication implements CommandLineRunner {
 			log.error("Error occurred in bootstrap.", e);
 		} finally {
 			int i = timer.incrementAndGet();
-			if (i >= MAX_RETRY) {
+			if (i >= maxRetry) {
 				log.error("server closed due to exausted times");
 				group.shutdownGracefully();
 			} else if (exception instanceof InterruptedException) {
