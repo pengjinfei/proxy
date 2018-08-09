@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClientApplication implements CommandLineRunner {
 
-    private static final int MAX_RETRY = 5;
+    private static final int MAX_RETRY = 10;
     @Autowired
     private ProxyConfiguration configuration;
     private ExhaustedTimer timer = new ExhaustedTimer(1, TimeUnit.MINUTES);
